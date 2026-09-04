@@ -1,0 +1,3 @@
+# live group data never belongs in git
+data/*.json
+.DS_Store

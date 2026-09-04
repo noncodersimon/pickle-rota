@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f766e">
+<title>Pickle Rota - fair pickleball rotation for your group</title>
+<style>
+  :root{--bg:#eef2f1;--surface:#fff;--ink:#13211f;--muted:#6b7c79;--line:#dfe7e5;
+        --teal:#0f766e;--teal-dark:#0b5752;--ball:#cfe218;
+        --shadow:0 6px 18px rgba(16,40,38,.10);--radius:18px}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:480px;margin:0 auto;padding:22px 16px 40px}
+  header{display:flex;align-items:center;gap:12px;padding:8px 0 6px}
+  .title{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .title small{display:block;font-size:13px;font-weight:600;color:var(--muted)}
+  .pitch{font-size:14px;color:var(--muted);margin:10px 2px 20px}
+  .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
+  label{display:block;font-size:13px;font-weight:700;margin:12px 2px 6px}
+  input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-family:inherit;background:#fbfdfc}
+  input:focus{outline:none;border-color:var(--teal)}
+  .btn{width:100%;margin-top:14px;background:var(--teal);color:#fff;border:none;border-radius:13px;
+       padding:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
+  .btn:active{transform:scale(.99)}
+  .err{color:#b4231f;font-size:13px;font-weight:600;margin-top:10px;display:none}
+  .done{display:none}
+  .linkbox{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;margin-top:10px;
+           font-size:13px;word-break:break-all}
+  .linkbox b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px}
+  footer{text-align:center;font-size:12px;color:var(--muted);margin-top:24px}
+  footer a{color:var(--teal);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg width="40" height="40" viewBox="0 0 34 34" aria-hidden="true">
+      <circle cx="17" cy="17" r="15" fill="#cfe218" stroke="#0b5752" stroke-width="2"/>
+      <g fill="#0b5752"><circle cx="12" cy="13" r="1.6"/><circle cx="20" cy="11" r="1.6"/>
+      <circle cx="22" cy="19" r="1.6"/><circle cx="13" cy="21" r="1.6"/><circle cx="17" cy="16" r="1.6"/></g>
+    </svg>
+    <div class="title">Pickle Rota<small>Fair rotation for one-court pickleball</small></div>
+  </header>
+  <p class="pitch">Everyone gets the same number of games, partners keep changing, latecomers get worked in - and the whole group can watch the draw live on their phones. Free, no accounts.</p>
+
+  <div class="card" id="createCard">
+    <h2>Start a group</h2>
+    <div id="createForm">
+      <label for="gname">Group name</label>
+      <input id="gname" maxlength="40" placeholder="e.g. Slapton Village Hall" autocomplete="off">
+      <label for="gpass">Organiser password</label>
+      <input id="gpass" type="password" maxlength="60" placeholder="Whoever knows this can run the games">
+      <button class="btn" id="createBtn">Create group</button>
+      <div class="err" id="createErr"></div>
+      <div class="hint">Your group gets its own web address. Share it with players; keep the password for organisers.</div>
+    </div>
+    <div class="done" id="createDone">
+      <p style="font-weight:800;margin:0 0 4px">You're set. Bookmark these:</p>
+      <div class="linkbox"><b>Organiser link (run the games)</b><span id="orgLink"></span></div>
+      <div class="linkbox"><b>Player link (watch along)</b><span id="viewLink"></span></div>
+      <button class="btn" id="goBtn">Open your group ▸</button>
+      <div class="hint">Tip: on a phone, open the organiser link and use Share → Add to Home Screen for an app icon.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Open an existing group</h2>
+    <label for="gopen">Group link or name</label>
+    <input id="gopen" placeholder="Paste your group link, or type its short name" autocomplete="off">
+    <button class="btn" id="openBtn">Open ▸</button>
+    <div class="err" id="openErr"></div>
+  </div>
+
+  <footer>A <a href="https://digitelos.co.uk">Digitelos</a> project · Groups unused for 3 months are removed automatically</footer>
+</div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+function showErr(id,msg){ const e=$(id); e.textContent=msg; e.style.display="block"; }
+function hideErr(id){ $(id).style.display="none"; }
+
+$("createBtn").onclick=async()=>{
+  hideErr("createErr");
+  const name=$("gname").value.trim(), pass=$("gpass").value;
+  if(!name){ showErr("createErr","Give your group a name."); return; }
+  if(pass.length<4){ showErr("createErr","Password needs at least 4 characters."); return; }
+  let r,d;
+  try{
+    r=await fetch("/api.php",{method:"POST",cache:"no-store",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:new URLSearchParams({action:"create",name,password:pass})});
+    d=await r.json();
+  }catch(e){ showErr("createErr","Can't reach the server - try again."); return; }
+  if(!r.ok||!d.slug){
+    const msgs={badname:"That name won't work - try another.",shortpass:"Password needs at least 4 characters.",
+                full:"We're at capacity right now - sorry! Try again another day."};
+    showErr("createErr", msgs[d&&d.error] || "Something went wrong - try again.");
+    return;
+  }
+  const base=location.origin+"/g/"+d.slug;
+  $("orgLink").textContent=base;
+  $("viewLink").textContent=base+"?view=1";
+  $("goBtn").onclick=()=>location.href="/g/"+d.slug;
+  $("createForm").style.display="none";
+  $("createDone").style.display="block";
+};
+
+$("openBtn").onclick=()=>{
+  hideErr("openErr");
+  const v=$("gopen").value.trim();
+  const m=v.match(/\/g\/([a-z0-9-]+)/) || v.toLowerCase().match(/^([a-z0-9][a-z0-9-]{1,39})$/);
+  if(!m){ showErr("openErr","That doesn't look like a group link or name."); return; }
+  location.href="/g/"+m[1];
+};
+$("gopen").addEventListener("keydown",e=>{ if(e.key==="Enter") $("openBtn").click(); });
+</script>
+</body>
+</html>

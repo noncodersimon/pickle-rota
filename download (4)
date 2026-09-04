@@ -1,0 +1,2 @@
+# Never serve group data over the web (defence in depth; the folder should sit outside the webroot anyway)
+Require all denied

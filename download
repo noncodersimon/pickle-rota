@@ -1,0 +1,3 @@
+RewriteEngine On
+# Pretty group URLs: /g/{slug} serves the app (query string preserved for ?view=1)
+RewriteRule ^g/[a-z0-9-]+/?$ app.html [L,QSA]
