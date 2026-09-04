@@ -1,7 +1,0 @@
-Pickle Rota foundations: multi-tenant scheduler, landing page, backend, docs
-
-Grown from the single-group Slapton Village Hall scheduler (preserved in
-legacy/). Adds: per-group instances at /g/{slug} with user-set hashed
-organiser passwords, landing page for creating/opening groups, per-group
-manifest for home-screen install, 90-day stale-group cleanup (opportunistic
-on create + cron endpoint), and full decision/deployment documentation.
