@@ -51,9 +51,9 @@
     <h2>Start a group</h2>
     <div id="createForm">
       <label for="gname">Group name</label>
-      <input id="gname" maxlength="40" placeholder="e.g. Slapton Village Hall" autocomplete="off">
+      <input id="gname" maxlength="40" placeholder="e.g. Slapton Village Hall" autocomplete="off" enterkeyhint="next">
       <label for="gpass">Organiser password</label>
-      <input id="gpass" type="password" maxlength="60" placeholder="Whoever knows this can run the games">
+      <input id="gpass" type="password" maxlength="60" placeholder="Whoever knows this can run the games" enterkeyhint="go">
       <button class="btn" id="createBtn">Create group</button>
       <div class="err" id="createErr"></div>
       <div class="hint">Your group gets its own web address. Share it with players; keep the password for organisers.</div>
@@ -70,7 +70,7 @@
   <div class="card">
     <h2>Open an existing group</h2>
     <label for="gopen">Group link or name</label>
-    <input id="gopen" placeholder="Paste your group link, or type its short name" autocomplete="off">
+    <input id="gopen" placeholder="Paste your group link, or type its name" autocomplete="off" enterkeyhint="go">
     <button class="btn" id="openBtn">Open ▸</button>
     <div class="err" id="openErr"></div>
   </div>
@@ -97,7 +97,8 @@ $("createBtn").onclick=async()=>{
   }catch(e){ showErr("createErr","Can't reach the server - try again."); return; }
   if(!r.ok||!d.slug){
     const msgs={badname:"That name won't work - try another.",shortpass:"Password needs at least 4 characters.",
-                full:"We're at capacity right now - sorry! Try again another day."};
+                full:"We're at capacity right now - sorry! Try again another day.",
+                store:"The server couldn't save your group. If you run this site, check the data folder is writable."};
     showErr("createErr", msgs[d&&d.error] || "Something went wrong - try again.");
     return;
   }
@@ -108,13 +109,29 @@ $("createBtn").onclick=async()=>{
   $("createForm").style.display="none";
   $("createDone").style.display="block";
 };
+$("gname").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("gpass").focus(); } });
+$("gpass").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("createBtn").click(); } });
 
-$("openBtn").onclick=()=>{
+/* Work out the group slug from whatever was typed: a pasted link, the slug itself, or the
+   group's name - derived the same way api.php does (lowercase, runs of anything else become
+   hyphens, trimmed, max 30 chars) so "Slapton Village Hall" finds /g/slapton-village-hall */
+function slugFrom(v){
+  const link=v.match(/\/g\/([a-z0-9-]+)/); if(link) return link[1];
+  const low=v.toLowerCase();
+  if(/^[a-z0-9][a-z0-9-]{1,39}$/.test(low)) return low;
+  const s=low.replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,30);
+  return /^[a-z0-9][a-z0-9-]{1,39}$/.test(s) ? s : null;
+}
+$("openBtn").onclick=async()=>{
   hideErr("openErr");
-  const v=$("gopen").value.trim();
-  const m=v.match(/\/g\/([a-z0-9-]+)/) || v.toLowerCase().match(/^([a-z0-9][a-z0-9-]{1,39})$/);
-  if(!m){ showErr("openErr","That doesn't look like a group link or name."); return; }
-  location.href="/g/"+m[1];
+  const v=$("gopen").value.trim(), slug=slugFrom(v);
+  if(!slug){ showErr("openErr","That doesn't look like a group link or name."); return; }
+  let r;
+  try{ r=await fetch("/api.php?action=read&g="+encodeURIComponent(slug)+"&_="+Date.now(),{cache:"no-store"}); }
+  catch(e){ showErr("openErr","Can't reach the server - try again."); return; }
+  if(r.status===404){ showErr("openErr","No group called \""+v+"\" - check the name, or paste the link you were sent."); return; }
+  if(!r.ok){ showErr("openErr","Something went wrong - try again."); return; }
+  location.href="/g/"+slug;
 };
 $("gopen").addEventListener("keydown",e=>{ if(e.key==="Enter") $("openBtn").click(); });
 </script>

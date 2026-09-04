@@ -6,7 +6,7 @@ Target: shared PHP hosting (built for Krystal; anything with PHP 8+, mod_rewrite
 
 1. Create the subdomain (e.g. `pickle.digitelos.co.uk`) and point its **document root at the repo's `public/` folder**. This is the important bit: it keeps `data/` outside the webroot so group files (which contain password hashes and control tokens) can never be fetched directly. The deny-all `.htaccess` inside `data/` is only a backstop.
 2. Upload the repository (everything except `.git` if you prefer).
-3. Permissions: files 644, folders 755. `data/` must be writable by PHP - if group creation returns a store error, set `data/` to 775.
+3. Permissions: files 644, folders 755. `data/` must be writable by PHP - if creating a group fails with "The server couldn't save your group", set `data/` to 775.
 4. Edit `public/cleanup.php` and change `CLEANUP_KEY` to something random.
 5. Smoke test:
    - Open the landing page, create a test group, check you land on `/g/test-...` and the app connects (no red status bar).
