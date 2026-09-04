@@ -27,7 +27,7 @@ function gpath($slug){ return DATA_DIR . '/' . $slug . '.json'; }
    "used" means someone actually ran games, not merely viewed. */
 function gc(){
   $cut = time() - STALE_DAYS * 86400;
-  foreach (glob(DATA_DIR . '/*.json') as $f) {
+  foreach (glob(DATA_DIR . '/*.json') ?: [] as $f) {
     $d = json_decode((string)@file_get_contents($f), true);
     $last = is_array($d) ? (int)($d['lastUsed'] ?? 0) : 0;
     if ($last < $cut) @unlink($f);
@@ -50,13 +50,13 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? 'read');
 
 /* ---------- create a new group ---------- */
 if ($action === 'create') {
-  if (!is_dir(DATA_DIR)) @mkdir(DATA_DIR, 0755, true);
+  if (!is_dir(DATA_DIR) && !@mkdir(DATA_DIR, 0755, true)) respond(500, ['error' => 'store']);
   gc();
   $name = trim((string)($_POST['name'] ?? ''));
   $pass = (string)($_POST['password'] ?? '');
   if ($name === '' || mb_strlen($name) > 40) respond(400, ['error' => 'badname']);
   if (strlen($pass) < MIN_PASS)              respond(400, ['error' => 'shortpass']);
-  if (count(glob(DATA_DIR . '/*.json')) >= MAX_GROUPS) respond(503, ['error' => 'full']);
+  if (count(glob(DATA_DIR . '/*.json') ?: []) >= MAX_GROUPS) respond(503, ['error' => 'full']);
 
   $base = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($name)), '-');
   if ($base === '') $base = 'group';
@@ -74,7 +74,9 @@ if ($action === 'create') {
     'created' => time(), 'lastUsed' => time(),
     'state' => null,
   ];
-  file_put_contents(gpath($slug), json_encode($store), LOCK_EX);
+  if (file_put_contents(gpath($slug), json_encode($store), LOCK_EX) === false) {
+    respond(500, ['error' => 'store']);   // data/ not writable - see docs/DEPLOYMENT.md step 3
+  }
   respond(200, ['ok' => true, 'slug' => $slug, 'name' => $name]);
 }
 
