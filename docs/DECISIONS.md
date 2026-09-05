@@ -44,27 +44,39 @@ The app is designed to be embedded (originally in a WordPress page). Lessons bak
 
 iOS freezes pages on sleep/background; timers stop and the UI can appear dead on return. The app listens for `visibilitychange`, `pageshow` and `focus` and immediately re-renders and re-syncs. This removed the "buttons don't work until you refresh" failure.
 
-## 7. Fairness algorithm (default mode)
+## 7. Fairness algorithm (default mode) - arrival-relative
 
-Selection: sort active players by fewest games, then longest wait, then random jitter; take four. "Ease in late arrivals" (default on) adds a soft rule: players who played the immediately previous game are deprioritised when enough rested players exist - so a latecomer catches up via play-rest-play rather than several games back to back.
+Fairness runs on **effective games**, not raw games: `eff(p) = games + credit`. Selection sorts active players by fewest effective games, then longest wait, then random jitter, and takes four. Raw `games` is still what the badge shows - the credit only steers the draw.
 
-Team split: of the three ways to pair four players, choose the one minimising `10 × repeat-partnerships + repeat-opponents + small random`. Partner variety is weighted well above opponent variety on purpose.
+Joining credit: when a player is added, `credit` is set to the group's lowest effective count at that moment (`joinCredit()`), so they enter level with the least-played player present and rotate at the group's pace from then on. They never claw back the games they missed. A player returning from Away is levelled the same way (`toggleHere` tops `credit` up to the group minimum if they are below it), so ducking out for an hour earns no catch-up either.
 
-Bookkeeping: pair counts are keyed on sorted id pairs; games are committed only when the next game is drawn, so the in-progress match is never double-counted and re-shuffles before play cost nothing.
+This replaced the original catch-up model, which sorted late arrivals to the front of the queue until their raw count matched everyone else's. In practice that favoured them far too much: a latecomer with a low count was drawn into nearly every game until level, at the expense of the people who had been there all evening. The philosophy, now consistent across the whole algorithm: arriving late gets you into the rotation graciously, but it buys you nothing - not games, not priority, not novelty value. Turn up on time if you want the full evening.
+
+"Avoid back-to-back games" (default on) adds a soft rule: players who played the immediately previous game are deprioritised when enough rested players exist. It was called "Ease in late arrivals" under the catch-up model, and the toggle keeps its old `gentle` key in saved state and `gentleToggle` id in the DOM.
+
+Team split: of the three ways to pair four players, choose the one minimising `10 × repeat-partnerships + repeat-opponents + small random`. Partner variety is weighted well above opponent variety on purpose. The split deliberately uses raw pair counts, not the familiarity credit from section 8: within one foursome the credit is the same for all three splits, so it would change nothing.
+
+Bookkeeping: pair counts are keyed on sorted id pairs; games are committed only when the next game is drawn, so the in-progress match is never double-counted and re-shuffles before play cost nothing. Older saved states need no migration - a missing `credit`, `pairCredit` or `joined` reads as 0.
 
 ## 8. "Prioritise mixing" (variety mode)
 
-Strict fairness plus the ease-in rule creates cliques at even group sizes: with 8 players the same two foursomes alternate all night (simulated and confirmed; with 12 players, three fixed foursomes). Variety mode replaces sorting with search: score **every possible foursome** and play the cheapest, where
+Strict fairness plus the back-to-back rule creates cliques at even group sizes: with 8 players the same two foursomes alternate all night (simulated and confirmed; with 12 players, three fixed foursomes). Variety mode replaces sorting with search: score **every possible foursome** and play the cheapest, where
 
-    cost = 1.0 × (sum of pair play-together counts among the four)
-         + 2.0 × (each player's games above the group minimum)
-         + 0.75 × (each player who played the previous game, if ease-in is on)
-         - 0.6 × (each player's consecutive games benched, capped at 5)
+    cost = 1.0 × (sum over the six pairs of: play-together count + max(pairCredit of the two))
+         + 2.0 × (each player's effective games above the group minimum)
+         + 0.75 × (each player who played the previous game, if avoid-back-to-back is on)
+         - 0.6 × (each player's games benched since max(last played, arrival), capped at 5)
          + random × 0.3
+
+Three of those terms are arrival-relative, for the same reason as section 7:
+
+- **Familiarity credit.** A newcomer's pairs all have zero history, which made any foursome containing them look wonderfully fresh to the search - late arrival bought novelty value. Each player carries `pairCredit`, set on joining to the average pair count across the active players at that moment (`avgPairCount`), and `togetherCost` adds `max(pairCredit)` of each pair back in, so the newcomer's pairs look ordinary rather than pristine. A returning player is topped up via `freshCredit(p)`: how much fresher their pairs are than the group norm.
+- **Effective games** in the FAIR term, per section 7.
+- **The bench clock starts at arrival.** WAIT counts from `max(lastPlayed, joined - 1)`, where `joined` is the game number at which the player was added or last returned from Away. Without this a newcomer looked as though they had waited since game one and collected the full WAIT bonus instantly.
 
 The WAIT term exists because without it, simulation showed players could sit out 3-5 consecutive games at odd counts; with it, worst-case is 2 (3 at eleven players) while game counts still never drift more than 1 apart and nearly every game is a fresh foursome. Pools larger than 18 are pre-trimmed to the fairest 12 before enumeration to bound the search.
 
-If you tune the weights, re-run the simulations (see the repo history / recreate with a small Node harness that drives `buildCurrent`/`commitCurrent` with fake players) - every weight here was chosen against measured behaviour, not intuition.
+If you tune the weights, re-run the simulations (see the repo history / recreate with a small Node harness that drives `buildCurrent`/`commitCurrent` with fake players) - every weight here was chosen against measured behaviour, not intuition. The arrival-relative terms change what the counts mean, not the weights.
 
 ## 9. Gender modes
 

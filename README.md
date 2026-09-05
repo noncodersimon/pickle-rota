@@ -8,7 +8,7 @@ Live at: https://pickle.digitelos.co.uk (a [Digitelos](https://digitelos.co.uk) 
 
 Anyone creates a group on the landing page (a name and an organiser password) and gets two links: an organiser link (`/g/your-group`) and a read-only player link (`/g/your-group?view=1`). One person at a time holds control - entering the password takes it, and passes it if someone else enters it later. Everyone else sees the live match, who's sitting out, game counts, and the history.
 
-The scheduler draws doubles matches that keep game counts even, avoid repeat partners and opponents, ease late arrivals in without back-to-back marathons, and (optionally) prioritise fresh foursomes over strictly equal counts. There are mixed-pairs and alternating men's/women's modes, tap-to-swap for manual overrides, an undo stack, a confirm step on advancing games, and a built-in guide behind the ? button.
+The scheduler draws doubles matches that keep game counts even, avoid repeat partners and opponents, bring late arrivals in at the group's pace rather than letting them catch up, and (optionally) prioritise fresh foursomes over strictly equal counts. There are mixed-pairs and alternating men's/women's modes, tap-to-swap for manual overrides, an undo stack, a confirm step on advancing games, and a built-in guide behind the ? button.
 
 ## Repository layout
 

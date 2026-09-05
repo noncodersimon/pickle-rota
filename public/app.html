@@ -200,11 +200,11 @@
     </details>
     <details>
       <summary>The players list</summary>
-      <div class="gtxt">Add people as they arrive - the app helps latecomers catch up on games. The number badge shows games played. Tap <b>Here / Away</b> when someone leaves or returns, and tap the <b>– / ♂ / ♀</b> badge to set a player's sex for the gender modes.</div>
+      <div class="gtxt">Add people as they arrive - latecomers join the rotation at the group's pace rather than replaying missed games. The number badge shows games played. Tap <b>Here / Away</b> when someone leaves or returns, and tap the <b>– / ♂ / ♀</b> badge to set a player's sex for the gender modes.</div>
     </details>
     <details>
       <summary>Modes and options</summary>
-      <div class="gtxt"><b>Open</b> - anyone can partner anyone. <b>Mixed pairs</b> - each team is one ♂ and one ♀. <b>M / W games</b> - alternates men's and women's games. <b>Ease in late arrivals</b> spreads catch-up games out. <b>Prioritise mixing</b> favours fresh combinations over strictly equal game counts - they even up over time.</div>
+      <div class="gtxt"><b>Open</b> - anyone can partner anyone. <b>Mixed pairs</b> - each team is one ♂ and one ♀. <b>M / W games</b> - alternates men's and women's games. <b>Avoid back-to-back games</b> rests players between draws where possible. <b>Prioritise mixing</b> favours fresh combinations over strictly equal game counts - they even up over time.</div>
     </details>
     <details>
       <summary>Previous games</summary>
@@ -233,10 +233,10 @@
     </div>
     <div class="settopt ctrl-only">
       <div>
-        <div class="settlabel">Ease in late arrivals</div>
-        <div class="setthint">Spread their catch-up games out instead of back-to-back</div>
+        <div class="settlabel">Avoid back-to-back games</div>
+        <div class="setthint">Rest players for a game before drawing them again, when others are free</div>
       </div>
-      <button class="switch" id="gentleToggle" role="switch" aria-label="Ease in late arrivals"></button>
+      <button class="switch" id="gentleToggle" role="switch" aria-label="Avoid back-to-back games"></button>
     </div>
     <div class="settopt ctrl-only">
       <div>
@@ -272,7 +272,7 @@ if(!SLUG) location.replace("/");
 
 /* ============ config ============ */
 const CONFIG = { api: "/api.php", pollMs: 3000 };
-const APP_VERSION = "3.0";
+const APP_VERSION = "3.1";
 const VIEW_ONLY = new URLSearchParams(location.search).has("view"); // add ?view=1 for a pure spectator embed
 
 /* ============ local state ============ */
@@ -384,6 +384,34 @@ function key(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
 function pCount(a,b){ return state.partners[key(a,b)]||0; }
 function oCount(a,b){ return state.opponents[key(a,b)]||0; }
 function activePlayers(){ return state.players.filter(p=>p.here); }
+/* Fairness runs on EFFECTIVE games: actual games + joining credit. A latecomer's
+   credit equals the group's lowest effective count when they join, so they enter
+   level with the least-played player and rotate at the group's pace from then on
+   - they never claw back the games they missed. */
+function eff(p){ return p.games + (p.credit||0); }
+function joinCredit(){
+  const act=activePlayers();
+  if(!act.length) return 0;
+  return Math.max(0, Math.min(...act.map(eff)));
+}
+/* Familiarity credit: a newcomer's pairs all have zero history, which would make
+   any foursome containing them look wonderfully fresh to variety mode. Each player
+   carries pairCredit = how much fresher their pairs are than the group norm at the
+   moment they join, and togetherCost adds it back - so late arrival buys no mixing
+   advantage. */
+function avgPairCount(list){
+  let s=0,n=0;
+  for(let i=0;i<list.length;i++) for(let j=i+1;j<list.length;j++){ s+=pCount(list[i].id,list[j].id)+oCount(list[i].id,list[j].id); n++; }
+  return n ? s/n : 0;
+}
+function freshCredit(p){
+  const others=activePlayers().filter(q=>q.id!==p.id);
+  if(others.length<2) return 0;
+  const norm=avgPairCount(others);
+  let s=0; others.forEach(q=>{ s+=pCount(p.id,q.id)+oCount(p.id,q.id); });
+  return Math.max(0, norm - s/others.length);
+}
+function pcredit(id){ const p=getPlayer(id); return (p&&p.pairCredit)||0; }
 function inCurrent(id){ return state.current && [...state.current.a,...state.current.b].includes(id); }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -410,7 +438,7 @@ function fairOrder(list){
         const jy = y.p.lastPlayed===prevGame ? 1 : 0;
         if(jx!==jy) return jx-jy;
       }
-      return x.p.games-y.p.games || x.p.lastPlayed-y.p.lastPlayed || x.r-y.r;
+      return eff(x.p)-eff(y.p) || x.p.lastPlayed-y.p.lastPlayed || x.r-y.r;
     }).map(o=>o.p);
 }
 /* Variety mode: score every possible foursome and take the freshest mix.
@@ -419,22 +447,24 @@ function fairOrder(list){
 const VARIETY = { FAIR:2.0, PAIR:1.0, BACK:0.75, WAIT:0.6, RAND:0.3 };
 function togetherCost(ids){
   let c=0;
-  for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++) c += pCount(ids[i],ids[j]) + oCount(ids[i],ids[j]);
+  for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++)
+    c += pCount(ids[i],ids[j]) + oCount(ids[i],ids[j]) + Math.max(pcredit(ids[i]), pcredit(ids[j]));
   return c;
 }
 function fourCost(four, minG, prevGame){
   let cost = VARIETY.PAIR * togetherCost(four.map(p=>p.id));
   for(const p of four){
-    cost += VARIETY.FAIR * (p.games - minG);
+    cost += VARIETY.FAIR * (eff(p) - minG);
     if(state.gentle && p.lastPlayed===prevGame) cost += VARIETY.BACK;
-    cost -= VARIETY.WAIT * Math.min(Math.max(0, prevGame - p.lastPlayed), 5);  // the longer benched, the cheaper to pick
+    const waitedFrom = Math.max(p.lastPlayed, (p.joined||0)-1);   // waiting counts from arrival, not from game one
+    cost -= VARIETY.WAIT * Math.min(Math.max(0, prevGame - waitedFrom), 5);  // the longer benched, the cheaper to pick
   }
   return cost + Math.random()*VARIETY.RAND;
 }
 function varietyPick(cands){
   if(cands.length<4) return null;
   let pool = cands.length>18 ? fairOrder(cands).slice(0,12) : cands;
-  const minG = Math.min(...pool.map(p=>p.games));
+  const minG = Math.min(...pool.map(eff));
   const prevGame = state.gameNum-1;
   let best=null, bestC=Infinity;
   for(let a=0;a<pool.length;a++) for(let b=a+1;b<pool.length;b++)
@@ -527,7 +557,7 @@ function buildMixedPairsVariety(){
   if(mPool.length<2 || wPool.length<2) return null;
   if(mPool.length>12) mPool=fairOrder(mPool).slice(0,9);
   if(wPool.length>12) wPool=fairOrder(wPool).slice(0,9);
-  const minG=Math.min(...act.map(p=>p.games));
+  const minG=Math.min(...act.map(eff));
   const prevGame=state.gameNum-1;
   let best=null, bestC=Infinity;
   for(let a=0;a<mPool.length;a++) for(let b=a+1;b<mPool.length;b++)
@@ -614,10 +644,26 @@ function addPlayer(name){
   if(!amController) return;
   name=(name||"").trim(); if(!name) return;
   snapshot();
-  state.players.push({id:uid(), name, here:true, games:0, lastPlayed:-1});
+  const pc = avgPairCount(activePlayers());
+  state.players.push({id:uid(), name, here:true, games:0, lastPlayed:-1, credit: joinCredit(), pairCredit: pc, joined: state.gameNum});
   save(); render();
 }
-function toggleHere(id){ if(!amController) return; const p=getPlayer(id); if(p){ snapshot(); p.here=!p.here; save(); render(); } }
+function toggleHere(id){
+  if(!amController) return;
+  const p=getPlayer(id); if(!p) return;
+  snapshot();
+  p.here=!p.here;
+  if(p.here){  // returning player: level them with the group so they don't reclaim missed games or missed freshness
+    const others=activePlayers().filter(q=>q.id!==p.id);
+    if(others.length){
+      const m=Math.min(...others.map(eff));
+      if(eff(p)<m) p.credit=(p.credit||0)+(m-eff(p));
+    }
+    p.pairCredit = Math.max(p.pairCredit||0, freshCredit(p));
+    p.joined = state.gameNum;   // waiting clock restarts on return
+  }
+  save(); render();
+}
 function removePlayer(id){
   if(!amController) return;
   snapshot();
@@ -629,7 +675,7 @@ function newSession(){
   if(!amController) return;
   if(!confirm("Start a new session? Game counts reset, players are kept.")) return;
   snapshot();
-  state.players.forEach(p=>{ p.games=0; p.lastPlayed=-1; });
+  state.players.forEach(p=>{ p.games=0; p.lastPlayed=-1; p.credit=0; p.pairCredit=0; p.joined=0; });
   state.partners={}; state.opponents={}; state.gameNum=0; state.current=null; state.startedAt=null; state.log=[]; state.lastSex=null;
   save(); render();
 }
@@ -736,7 +782,7 @@ function renderPlayers(){
   }
   const act=activePlayers().length;
   $("hint").textContent = state.players.length
-    ? `${act} here · the number badge shows games played.${amController?" Late arrivals get picked first to catch up.":""}`
+    ? `${act} here · the number badge shows games played.${amController?" Late arrivals join at the group's pace - no catching up needed.":""}`
     : "";
 }
 function renderToggle(){
