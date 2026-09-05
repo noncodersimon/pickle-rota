@@ -4,7 +4,7 @@ Target: shared PHP hosting (built for Krystal; anything with PHP 8+, mod_rewrite
 
 ## First deploy
 
-1. Create the subdomain (e.g. `pickle.digitelos.co.uk`) and point its **document root at the repo's `public/` folder**. This is the important bit: it keeps `data/` outside the webroot so group files (which contain password hashes and control tokens) can never be fetched directly. The deny-all `.htaccess` inside `data/` is only a backstop.
+1. Create the subdomain (e.g. `pickle-rota.digitelos.co.uk`) and point its **document root at the repo's `public/` folder**. This is the important bit: it keeps `data/` outside the webroot so group files (which contain password hashes and control tokens) can never be fetched directly. The deny-all `.htaccess` inside `data/` is only a backstop.
 2. Upload the repository (everything except `.git` if you prefer).
 3. Permissions: files 644, folders 755. `data/` must be writable by PHP - if creating a group fails with "The server couldn't save your group", set `data/` to 775.
 4. Edit `public/cleanup.php` and change `CLEANUP_KEY` to something random.
@@ -18,7 +18,7 @@ Target: shared PHP hosting (built for Krystal; anything with PHP 8+, mod_rewrite
 
 Groups unused for 90 days are already removed opportunistically whenever anyone creates a group. For a guaranteed sweep, add a weekly cron in the hosting panel:
 
-    curl -s "https://pickle.digitelos.co.uk/cleanup.php?key=YOUR_KEY" > /dev/null
+    curl -s "https://pickle-rota.digitelos.co.uk/cleanup.php?key=YOUR_KEY" > /dev/null
 
 "Unused" means no organiser claimed control or saved games - spectator views don't count.
 
@@ -28,7 +28,7 @@ Upload the changed files over the old ones. `APP_VERSION` in `app.html` shows at
 
 ## Embedding a group in another website
 
-    <iframe id="pickleFrame" src="https://pickle.digitelos.co.uk/g/YOUR-GROUP?view=1&v=1"
+    <iframe id="pickleFrame" src="https://pickle-rota.digitelos.co.uk/g/YOUR-GROUP?view=1&v=1"
             style="width:100%;height:820px;border:0;display:block;" scrolling="no"></iframe>
     <script>
     window.addEventListener("message", function (e) {

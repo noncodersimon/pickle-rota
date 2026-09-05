@@ -2,7 +2,7 @@
 
 Fair, sociable rotation for one-court pickleball groups. Everyone gets the same number of games, partners keep changing, latecomers get worked in gently - and the whole group can watch the live draw on their phones. Free, no accounts, runs on any shared PHP host.
 
-Live at: https://pickle.digitelos.co.uk (a [Digitelos](https://digitelos.co.uk) project)
+Live at: https://pickle-rota.digitelos.co.uk (a [Digitelos](https://digitelos.co.uk) project)
 
 ## How it works
 

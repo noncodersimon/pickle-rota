@@ -1,3 +1,5 @@
 RewriteEngine On
-# Pretty group URLs: /g/{slug} serves the app (query string preserved for ?view=1)
-RewriteRule ^g/[a-z0-9-]+/?$ app.html [L,QSA]
+# Pretty group URLs: /g/{slug} serves the app (query string preserved for ?view=1).
+# The substitution is an absolute URL path so it also works on hosts where the
+# document root is an aliased subfolder of the webspace (e.g. IONOS) without RewriteBase.
+RewriteRule ^g/[a-z0-9-]+/?$ /app.html [L,QSA]

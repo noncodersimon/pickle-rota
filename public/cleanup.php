@@ -1,6 +1,6 @@
 <?php
 /* Scheduled cleanup endpoint. Point a weekly cron at:
-     https://pickle.digitelos.co.uk/cleanup.php?key=YOUR_KEY
+     https://pickle-rota.digitelos.co.uk/cleanup.php?key=YOUR_KEY
    (GC also runs opportunistically on every group creation, so this is belt and braces.) */
 const CLEANUP_KEY = 'change-me-before-deploy';
 const DATA_DIR = __DIR__ . '/../data';
