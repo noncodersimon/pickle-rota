@@ -13,6 +13,7 @@ Target: shared PHP hosting (built for Krystal; anything with PHP 8+, mod_rewrite
    - Take control with your password on one device, then take over from a second device - the first should drop to view-only.
    - Fetch `https://your-domain/data/` and confirm it does NOT list or serve files.
    - Fetch `/cleanup.php?key=WRONG` (expect 403) and with the right key (expect a JSON summary).
+   - Fetch `http://your-domain/` (plain HTTP) and confirm it redirects to `https://` - the redirect lives in `public/.htaccess`.
 
 ## Scheduled cleanup (optional but tidy)
 

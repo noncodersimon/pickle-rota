@@ -1,4 +1,12 @@
 RewriteEngine On
+
+# Always use HTTPS. Both conditions must hold, so a proxy that reports the scheme
+# oddly can only ever skip the redirect, never loop it. The query string (?view=1)
+# is carried across automatically.
+RewriteCond %{HTTPS} !=on
+RewriteCond %{SERVER_PORT} =80
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
 # Pretty group URLs: /g/{slug} serves the app (query string preserved for ?view=1).
 # The substitution is an absolute URL path so it also works on hosts where the
 # document root is an aliased subfolder of the webspace (e.g. IONOS) without RewriteBase.
