@@ -11,3 +11,17 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 # The substitution is an absolute URL path so it also works on hosts where the
 # document root is an aliased subfolder of the webspace (e.g. IONOS) without RewriteBase.
 RewriteRule ^g/[a-z0-9-]+/?$ /app.html [L,QSA]
+
+# Caching (see docs/DECISIONS.md section 4). The HTML carries no-cache meta tags,
+# but those are not honoured by every browser/proxy, so set a real header: browsers
+# may store the page but must revalidate before use, so a new APP_VERSION always
+# reaches phones immediately (the ETag makes the revalidation a cheap 304). The API
+# already sends no-store from PHP; icons are safe to cache for a day.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(png|ico)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+</IfModule>
