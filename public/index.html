@@ -4,7 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f766e">
-<title>Pickle Rota - fair pickleball rotation for your group</title>
+<title>Pickle Rota - free pickleball rotation app for clubs and open play</title>
+<meta name="description" content="Free pickleball rotation app for one-court club sessions and open play. Equal games, changing partners, late arrivals worked in, live on every phone.">
+<link rel="canonical" href="https://pickle-rota.digitelos.co.uk/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pickle Rota">
+<meta property="og:title" content="Pickle Rota - fair pickleball rotation for your group">
+<meta property="og:description" content="Equal games for everyone, partners keep changing, late arrivals worked in - and the whole group watches the draw live on their phones. Free, no accounts.">
+<meta property="og:url" content="https://pickle-rota.digitelos.co.uk/">
+<meta property="og:image" content="https://pickle-rota.digitelos.co.uk/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pickle Rota on a phone, showing the current game and who is sitting out">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Pickle Rota",
+  "url": "https://pickle-rota.digitelos.co.uk/",
+  "description": "Free pickleball rotation app for one-court groups: equal games for everyone, changing partners, late arrivals worked in, and the live draw on every phone.",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires a modern web browser",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "GBP"
+  },
+  "image": "https://pickle-rota.digitelos.co.uk/og-image.jpg",
+  "author": {
+    "@type": "Organization",
+    "name": "Digitelos",
+    "url": "https://digitelos.co.uk/"
+  }
+}
+</script>
 <style>
   :root{--bg:#eef2f1;--surface:#fff;--ink:#13211f;--muted:#6b7c79;--line:#dfe7e5;
         --teal:#0f766e;--teal-dark:#0b5752;--ball:#cfe218;
@@ -14,7 +50,7 @@
        background:var(--bg);color:var(--ink);line-height:1.5}
   .wrap{max-width:480px;margin:0 auto;padding:22px 16px 40px}
   header{display:flex;align-items:center;gap:12px;padding:8px 0 6px}
-  .title{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .title{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
   .title small{display:block;font-size:13px;font-weight:600;color:var(--muted)}
   .pitch{font-size:14px;color:var(--muted);margin:10px 2px 20px}
   .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
@@ -31,6 +67,15 @@
            font-size:13px;word-break:break-all}
   .linkbox b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
   .hint{font-size:12px;color:var(--muted);margin-top:10px}
+  .info p,.info ol{font-size:14px;line-height:1.55;margin:0 0 10px}
+  .info ol{padding-left:20px}
+  .info li{margin-bottom:8px}
+  .info li b{font-weight:700}
+  .info p:last-child,.info ol:last-child{margin-bottom:0}
+  .faq h3{font-size:14px;font-weight:700;margin:14px 0 4px}
+  .faq h3:first-of-type{margin-top:0}
+  .faq p{color:var(--muted)}
+  .info a{color:var(--teal);font-weight:700;text-decoration:none}
   footer{text-align:center;font-size:12px;color:var(--muted);margin-top:24px}
   footer a{color:var(--teal);font-weight:700;text-decoration:none}
 </style>
@@ -43,7 +88,7 @@
       <g fill="#0b5752"><circle cx="12" cy="13" r="1.6"/><circle cx="20" cy="11" r="1.6"/>
       <circle cx="22" cy="19" r="1.6"/><circle cx="13" cy="21" r="1.6"/><circle cx="17" cy="16" r="1.6"/></g>
     </svg>
-    <div class="title">Pickle Rota<small>Fair rotation for one-court pickleball</small></div>
+    <h1 class="title">Pickle Rota<small>Fair rotation for one-court pickleball</small></h1>
   </header>
   <p class="pitch">Everyone gets the same number of games, partners keep changing, latecomers get worked in - and the whole group can watch the draw live on their phones. Free, no accounts.</p>
 
@@ -74,6 +119,41 @@
     <button class="btn" id="openBtn">Open ▸</button>
     <div class="err" id="openErr"></div>
   </div>
+
+  <section class="card info">
+    <h2>How it works</h2>
+    <ol>
+      <li><b>Start a group.</b> Give it a name and an organiser password. You get a web address for your group - nothing to install, no accounts for anyone.</li>
+      <li><b>Add players as they arrive.</b> Tap Start play and the app draws the first doubles match and shows who is sitting out.</li>
+      <li><b>Tap Next game after each match.</b> The app draws the next four, rests the others, and everyone watching on the player link sees the same screen on their own phone.</li>
+    </ol>
+  </section>
+
+  <section class="card info">
+    <h2>Who it's for</h2>
+    <p>One-court pickleball groups with more players than places: club nights, village hall sessions, leisure centre slots and open play. It replaces the whiteboard, the paddle rack and the debate about who has played most, and it works for any number of players from four upwards.</p>
+    <p>Everyone plays the same number of games. Partners and opponents keep changing. The rota runs on whichever phone the organiser has in their pocket, and the whole group can follow along on theirs.</p>
+  </section>
+
+  <section class="card info faq">
+    <h2>Questions</h2>
+    <h3>How does it keep the games fair?</h3>
+    <p>It counts games per player and always draws from those who have played least, then picks the pairing that avoids repeat partners and opponents. Turn on Prioritise mixing and it goes further, scoring every possible foursome for the freshest combination. Game counts stay within a game or so of each other either way.</p>
+    <h3>What happens when someone arrives late?</h3>
+    <p>They join at the group's pace, level with whoever has played least, and rotate normally from there. Late arrivals are worked in graciously, but they are not drawn into every game to catch up at the expense of the people who were there on time.</p>
+    <h3>Do players need an app or an account?</h3>
+    <p>No. The organiser opens one link on a phone and players open another to watch along. There is nothing to install and no sign-up. If you use it every week, Add to Home Screen gives it an icon like any other app.</p>
+    <h3>Can we play mixed doubles, or men's and women's games?</h3>
+    <p>Yes. Mark each player with the ♂ or ♀ badge and choose Mixed pairs (each team one man and one woman) or M / W games (alternating). Players left unmarked can fill either slot, so nobody sits out for want of a symbol.</p>
+    <h3>What if we change the teams on court?</h3>
+    <p>Tap a name on the match card, then another, and they swap places - including with someone on the bench. The rota then records what actually happened, and there is an undo if you tap the wrong name.</p>
+    <h3>Does it handle more than one court?</h3>
+    <p>Not yet. It is built for one court and a bench, which is how most village hall and club sessions run. With two courts, run two groups.</p>
+    <h3>What does it cost?</h3>
+    <p>Nothing. There is no plan to upgrade to and nothing to renew. Groups that go unused for three months are removed automatically.</p>
+    <h3>Who made it?</h3>
+    <p>Pickle Rota is a <a href="https://digitelos.co.uk">Digitelos</a> project from Devon. It started as a scheduler for a village hall's weekly pickleball sessions and grew into something any group can use.</p>
+  </section>
 
   <footer>A <a href="https://digitelos.co.uk">Digitelos</a> project · Groups unused for 3 months are removed automatically</footer>
 </div>

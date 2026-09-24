@@ -23,6 +23,17 @@ Groups unused for 90 days are already removed opportunistically whenever anyone 
 
 "Unused" means no organiser claimed control or saved games - spectator views don't count.
 
+## Search engines
+
+Only the landing page is meant to be indexed. `app.html` carries `<meta name="robots" content="noindex">` so individual group pages stay out of Google, and `robots.txt` deliberately does not block `/g/` - a crawler has to be able to read that tag. `robots.txt` also points at `sitemap.xml`, which lists the landing page alone. `og-image.jpg` is the preview card for WhatsApp, Facebook and the like.
+
+Once, after the first deploy:
+
+1. In Google Search Console add a Domain property for `digitelos.co.uk` (verified with a DNS TXT record at IONOS). It covers every subdomain, this one included. A URL-prefix property for `https://pickle-rota.digitelos.co.uk/` works too.
+2. Submit `https://pickle-rota.digitelos.co.uk/sitemap.xml` under Sitemaps.
+3. Run URL inspection on the landing page and request indexing.
+4. Paste the landing page into a link-preview checker (Facebook's Sharing Debugger, or opengraph.xyz) to confirm the card. Do this again after any change to `og-image.jpg`; platforms cache previews.
+
 ## Updating
 
 Upload the changed files over the old ones. `APP_VERSION` in `app.html` shows at the bottom of the app - bump it with every release so you can verify which build a phone is running (browser caches, especially iOS Safari, are the number one source of phantom bugs; see DECISIONS.md section 4). If any page embeds the app in an iframe, bump the `?v=` on the iframe src too.

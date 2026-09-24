@@ -102,3 +102,9 @@ Undo is a local (per-controller-session) stack of full-state snapshots taken bef
 ## 13. Things deliberately left out
 
 Scores and winner-stays-on (the founding goal is equal games and social mixing, not competition), multiple courts, accounts, and any client-side framework. All are possible later; none earn their complexity yet.
+
+## 14. One indexable page
+
+The landing page is the only page search engines should see. Group pages are near-identical to each other and private in practice, so `app.html` sends `noindex`. `robots.txt` leaves `/g/` crawlable on purpose: a page a crawler cannot fetch cannot show its noindex tag, and can still be indexed by URL alone.
+
+The landing page carries the words people actually search for (rotation, open play, club night, village hall, one court, doubles) in plain copy - how it works, who it is for, and a questions section - plus a meta description, canonical URL, Open Graph card and WebApplication structured data. The name collides with Rota in Cadiz, where a pickleball venue already owns "pickleball rota" on Google, so the brand to protect is "Pickle Rota" as two words. Sharing in WhatsApp and Facebook groups is expected to bring more players than search for a long while; the Open Graph image exists for that.
