@@ -1,0 +1,9 @@
+# Pickle Rota - the landing page is the only page meant for search engines.
+# Group pages (/g/...) carry a noindex tag rather than being blocked here, so
+# crawlers can read that tag and keep them out of the index.
+User-agent: *
+Disallow: /api.php
+Disallow: /cleanup.php
+Disallow: /manifest.php
+
+Sitemap: https://pickle-rota.digitelos.co.uk/sitemap.xml

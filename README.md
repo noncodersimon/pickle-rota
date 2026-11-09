@@ -12,7 +12,7 @@ The scheduler draws doubles matches that keep game counts even, avoid repeat par
 
 ## Repository layout
 
-- `public/` - the deployable site: landing page, the app (`app.html`, served at `/g/{slug}`), backend (`api.php`), per-group manifest, cron cleanup endpoint, icons, `.htaccess` rewrites
+- `public/` - the deployable site: landing page, the app (`app.html`, served at `/g/{slug}`), backend (`api.php`), per-group manifest, cron cleanup endpoint, icons, `.htaccess` rewrites, `robots.txt`, `sitemap.xml` and the `og-image.jpg` share card
 - `data/` - live group JSON files (gitignored; keep outside the webroot - see deployment guide)
 - `docs/` - DECISIONS.md (why everything is the way it is - read this first), DEPLOYMENT.md, ROADMAP.md
 - `legacy/slapton-single-instance/` - the original single-group version this grew from, kept for reference
